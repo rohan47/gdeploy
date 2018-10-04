@@ -32,13 +32,10 @@ class BackendReset(object):
     def __init__(self, module):
         self.output = []
         self.module = module
-        try:
-            self.pvs = literal_eval(self.validated_params('pvs'))
-        except:
-            self.pvs = None
+        self.pvs = self.module.params.get('pvs') or None
         self.vgs = self.module.params.get('vgs') or None
         self.lvs = self.module.params.get('lvs') or None
-        self.unmount = self.module.params.get('unmount') or 'no'
+        self.unmount = self.module.params.get('unmount') or False
         self.mountpoints = self.module.params.get('mountpoints') or None
         self.remove_lvs()
         self.remove_vgs()
@@ -94,7 +91,7 @@ class BackendReset(object):
         self.output.append([rc, out, err])
 
     def umount_bricks(self):
-        if not self.unmount or literal_eval(self.unmount)[0].lower() != 'yes':
+        if not self.unmount:
             return
         if not self.mountpoints:
             return
@@ -157,10 +154,10 @@ class BackendReset(object):
 if __name__ == '__main__':
     module = AnsibleModule(
         argument_spec=dict(
-            pvs=dict(),
+            pvs=dict(type='list'),
             vgs=dict(),
             lvs=dict(type='str'),
-            unmount=dict(),
+            unmount=dict(type='bool', default='no'),
             mountpoints=dict(),
         ),
     )
